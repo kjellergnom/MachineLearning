@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
-from sklearn.pipeline import make_pipeline
+from sklearn.metrics import mean_squared_error, r2_score
 
 x = np.random.rand(100, 1)
 x = np.sort(x, axis=None)
 noise = np.random.randn(100,1)
-y = x**2 + 2.0 + 0.1*np.squeeze(noise)
+y = x**2 + 2.0 + 0.05*np.squeeze(noise)
 
 ############### 1. ############
 
@@ -34,3 +34,7 @@ plt.show()
 
 ############### 3. ############
 
+MSE = mean_squared_error(y, y_predict)
+R2 = r2_score(y, y_predict)
+print(f'MSE = {MSE}\nR2 = {R2}')
+# MSE scales proportionally with noise amplitude, while R2 scales inversely with noise amplitude.
