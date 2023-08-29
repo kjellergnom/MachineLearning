@@ -25,8 +25,11 @@ MSE_train = np.sum((y_tilde - y_train)**2)/n
 MSE_test = np.sum((y_predict - y_test)**2)/n
 print(f'5th order:\nMSE_train = {MSE_train}\nMSE_test = {MSE_test}')
 
-plt.plot(X_train[:, 1], y_tilde, 'g', label='Train; 5th order')
-plt.plot(X_test[:, 1], y_predict, 'g--', label='Predict')
+X_train_plot, y_tilde_plot = zip(*sorted(zip(X_train[:, 1], y_tilde)))
+X_test_plot, y_predict_plot = zip(*sorted(zip(X_test[:, 1], y_predict)))
+
+plt.plot(X_train_plot, y_tilde_plot, 'g', label='Train; 5th order')
+plt.plot(X_test_plot, y_predict_plot, 'g--', label='Predict', zorder=2)
 
 ########## c) ##########
 poly_deg = 15
@@ -41,13 +44,11 @@ MSE_train = np.sum((y_tilde - y_train)**2)/n
 MSE_test = np.sum((y_predict - y_test)**2)/n
 print(f'15th order:\nMSE_train = {MSE_train}\nMSE_test = {MSE_test}')
 
-print(X_train[:, 1])
-print(np.sort(X_train[:, 1]))
-print(np.sort(X_test[:, 1]))
-print(np.shape(np.sort(X_test[:, 1])))
+X_train_plot, y_tilde_plot = zip(*sorted(zip(X_train[:, 1], y_tilde)))
+X_test_plot, y_predict_plot = zip(*sorted(zip(X_test[:, 1], y_predict)))
 
-plt.plot(X_train[:, 1], y_tilde, 'b', label='Train; 15th order')
-plt.plot(X_test[:, 1], y_predict, 'b--', label='Predict')
+plt.plot(X_train_plot, y_tilde_plot, 'b', label='Train; 15th order')
+plt.plot(X_test_plot, y_predict_plot, 'b--', label='Predict', zorder=2)
 plt.scatter(x, y, c='r', label='Data')
 plt.legend(loc='best')
 plt.show()
