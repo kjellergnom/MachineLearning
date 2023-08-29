@@ -17,10 +17,7 @@ design_matrix[:, 2] = x[:]**2
 beta = np.linalg.inv(design_matrix.transpose() @ design_matrix) @ design_matrix.transpose() @ y
 y_tilde = beta[0] + beta[1]*x + beta[2]*x**2
 
-plt.scatter(x, y, c='r', label = 'Data points')
-plt.plot(x, y_tilde, label = 'LSM')
-plt.legend(loc='best')
-plt.show()
+plt.plot(x, y_tilde, lw=5, label = 'LSM')
 
 ############### 2. ############
 
@@ -31,7 +28,7 @@ poly_model.fit(poly, y.reshape(-1, 1))
 y_predict = poly_model.predict(poly)
 
 plt.scatter(x, y, c='r', label = 'Data points')
-plt.plot(x, y_predict, label = 'Sklearn linreg')
+plt.plot(x, y_predict, '--', label = 'Sklearn linreg')
 plt.legend(loc='best')
 plt.show()
 
