@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
 
 x = np.random.rand(100, 1)
 x = np.sort(x, axis=None)
@@ -16,21 +17,21 @@ design_matrix[:, 2] = x[:]**2
 beta = np.linalg.inv(design_matrix.transpose() @ design_matrix) @ design_matrix.transpose() @ y
 y_tilde = beta[0] + beta[1]*x + beta[2]*x**2
 
-# plt.scatter(x, y, c='r', label = 'Data points')
-# plt.plot(x, y_tilde, label = 'LSM')
-# plt.legend(loc='best')
-# plt.show()
+plt.scatter(x, y, c='r', label = 'Data points')
+plt.plot(x, y_tilde, label = 'LSM')
+plt.legend(loc='best')
+plt.show()
 
 ############### 2. ############
 
-x = np.random.rand(100,1)
-y = 2.0+5*x*x+0.1*np.random.randn(100,1)
 poly = PolynomialFeatures(degree=2)
-X_ = poly.fit_transform(design_matrix)
-predict_ = poly.fit
+poly = poly.fit_transform(x.reshape(-1, 1), y.reshape(-1, 1))
+poly_model = LinearRegression()
+poly_model.fit(poly, y.reshape(-1, 1))
+y_predict = poly_model.predict(poly)
 
 plt.scatter(x, y, c='r', label = 'Data points')
-plt.plot(x_new, y_predict, label = 'Sklearn linreg')
+plt.plot(x, y_predict, label = 'Sklearn linreg')
 plt.legend(loc='best')
 plt.show()
 
