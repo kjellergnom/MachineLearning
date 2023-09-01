@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
 np.random.seed()
-n = 100
+n = 50
 x = np.linspace(-3, 3, n).reshape(-1, 1)
 y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2)+ np.random.normal(0, 0.1, x.shape)
 
@@ -45,7 +45,8 @@ plt.legend(loc='best')
 plt.show()
 
 ########## c) ##########
-X = generate_design_matrix(x, 15)
+degree = 15
+X = generate_design_matrix(x, degree)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 y_tilde = least_squares_method(X_train, y_train)
 y_predict = least_squares_method(X_test, y_test)
@@ -64,7 +65,7 @@ plt.legend(loc='best')
 plt.show()
 
 plt.figure()
-poly_array = np.arange(1, 16)
+poly_array = np.arange(1, degree+1)
 MSE_train_array = np.zeros(len(poly_array))
 MSE_test_array = np.zeros(len(poly_array))
 for p in poly_array:
