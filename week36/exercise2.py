@@ -25,13 +25,13 @@ def beta_Ridge(X, y, lmbda):
 
 np.random.seed()
 n = 100
-degree = 10
+degree = 5
 x = np.linspace(-3, 3, n).reshape(-1, 1)
 y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2)+ np.random.normal(0, 0.1, x.shape)
 lmbda = [0.0001, 0.001, 0.01, 0.1, 1]
 # lmbda = [10**(-i) for i in np.linspace(4, 0, 100)]
 print(lmbda)
-bias_bool = 0       # Includes/excludes bias in design matrix and chooses the corresponding column in X 
+bias_bool = 1       # Includes/excludes bias in design matrix and chooses the corresponding column in X 
 
 # Generate design matrix and split into train and test
 X = generate_design_matrix(x, degree, include_bias=bias_bool)
@@ -56,6 +56,8 @@ X_OLS_test_plot, y_predict_OLS_plot = zip(*sorted(zip(X_test_scaled[:, bias_bool
 plt.plot(X_OLS_train_plot, y_tilde_OLS_plot, 'g', label='Train', zorder=1)
 plt.plot(X_OLS_test_plot, y_predict_OLS_plot, 'g--', label='Test', zorder=2)
 plt.legend(loc='best')
+plt.xlabel('x')
+plt.ylabel('f(x)')
 plt.title(f'OLS; poly deg: {degree}')
 plt.plot(x, y, 'ro', label='Data')
 plt.show()
@@ -75,10 +77,31 @@ for l in lmbda:
     print(f'MSE_Ridge_train = {MSE_Ridge_train:.4f}, MSE_Ridge_test = {MSE_Ridge_test:.4f}')
     MSE_Ridge_train_arr[lmbda.index(l)] = MSE_Ridge_train
     MSE_Ridge_test_arr[lmbda.index(l)] = MSE_Ridge_test
-
-plt.plot(lmbda, MSE_Ridge_train_arr, 'b', label=f'Train', zorder=1)
-plt.plot(lmbda, MSE_Ridge_test_arr, 'b--', label=f'Test', zorder=2)
-plt.xscale('log')
+    X_Ridge_train_plot, y_tilde_Ridge_plot = zip(*sorted(zip(X_train_scaled[:, bias_bool], y_tilde_Ridge)))
+    X_Ridge_test_plot, y_predict_Ridge_plot = zip(*sorted(zip(X_test_scaled[:, bias_bool], y_test_Ridge)))
+    plt.plot(X_Ridge_train_plot, y_tilde_Ridge_plot, label=f'Train, $\lambda$ = {l}', zorder=1)
+    plt.plot(X_Ridge_test_plot, y_predict_Ridge_plot, '--', label=f'Test, $\lambda$ = {l}', zorder=2)
+plt.plot(x, y, 'ro', label='Data')
+plt.legend(loc='best')
 plt.title(f'Ridge; poly deg: {degree}')
+plt.show()
+
+plt.plot(lmbda, MSE_Ridge_train_arr, 'b', label=f'Ridge train', zorder=2)
+plt.plot(lmbda, MSE_Ridge_test_arr, 'b--', label=f'Ridge test', zorder=2)
+plt.axhline(y=MSE_OLS_train, color='r', linestyle='-', label='OLS train', zorder=1)
+plt.axhline(y=MSE_OLS_test, color='r', linestyle='--', label='OLS test', zorder=1)
+plt.xscale('log')
+plt.ylabel('MSE')
+plt.xlabel(r'$\lambda$')
+plt.title(f'Poly deg: {degree}')
 plt.legend(loc='best')
 plt.show()
+
+#### Discussion ####
+# As lambda reaches 0 the Ridge regression converges to the OLS solution, as expected.
+# For an unbiased regression the Ridge regression performs worse than OLS for all lambda because beta_OLS is already the optimal solution.
+# We therefore see that the Ridge regression consistently diverges and performs worse than OLS as lambda reaches the 10^-2 - 10^-1 range.
+# The advantage of Ridge in this case is that it is less prone to overfitting due to how lambda reduces the importance of the lower singular values of X, 
+# which in turn reduces the weights of the corresponding beta parameters.
+# 
+# Ultimately, Ridge introduces bias by reducing the variance of beta.
