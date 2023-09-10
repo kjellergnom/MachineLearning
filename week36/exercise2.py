@@ -25,7 +25,7 @@ def beta_Ridge(X, y, lmbda):
 
 np.random.seed()
 n = 100
-degree = 5
+degree = 15
 x = np.linspace(-3, 3, n).reshape(-1, 1)
 y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2)+ np.random.normal(0, 0.1, x.shape)
 lmbda = [0.0001, 0.001, 0.01, 0.1, 1]
@@ -100,8 +100,11 @@ plt.show()
 #### Discussion ####
 # As lambda reaches 0 the Ridge regression converges to the OLS solution, as expected.
 # For an unbiased regression the Ridge regression performs worse than OLS for all lambda because beta_OLS is already the optimal solution.
-# We therefore see that the Ridge regression consistently diverges and performs worse than OLS as lambda reaches the 10^-2 - 10^-1 range.
+# We therefore see that the MSE of the Ridge regression (both train and test) consistently diverges and performs worse than OLS as lambda reaches the 10^-2 - 10^-1 range.
+# A few runs result in a lower MSE for the tests than the training for both OLS and Ridge, but this is not consistent. 
+# Sometimes there is also a dip in the MSE for the test data within the 10^-2 - 10^-1 range.
 # The advantage of Ridge in this case is that it is less prone to overfitting due to how lambda reduces the importance of the lower singular values of X, 
 # which in turn reduces the weights of the corresponding beta parameters.
-# 
+# On average the MSE is highest with a polynomial degree of 5, as it is clearly underfitting.
+# The MSE is often similar for polynomial degrees 10 and 15, but the MSE for the 15th degree polynomial fluctuates more often to a higher MSE.
 # Ultimately, Ridge introduces bias by reducing the variance of beta.
