@@ -24,7 +24,7 @@ def MSE(y, y_tilde):
     return np.sum((y_tilde - y)**2)/n
 
 def least_squares_method(X, y):
-    beta =  np.linalg.inv(X.T @ X) @ X.T @ y
+    beta =  np.linalg.pinv(X.T @ X) @ X.T @ y
     y_tilde = X @ beta
     return y_tilde
 

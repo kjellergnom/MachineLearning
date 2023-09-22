@@ -50,6 +50,7 @@ x = np.sort(np.random.uniform(0, 1, n))
 y = np.sort(np.random.uniform(0, 1, n))
 X = create_X(x, y, order)
 noise = np.random.normal(0, 0.05, (n,n))
+noise = 0
 x, y = np.meshgrid(x,y)
 z = FrankeFunction(x, y) + noise
 
@@ -57,7 +58,7 @@ z = FrankeFunction(x, y) + noise
 X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=test_size, shuffle=False)
 
 # Scale data using sklearn
-scaler = StandardScaler()
+scaler = StandardScaler(with_std=False)
 scaler.fit(X_train)
 X_train_scaled = scaler.transform(X_train)
 X_test_scaled = scaler.transform(X_test)
@@ -88,10 +89,10 @@ ax = fig.add_subplot(projection='3d')
 ax.scatter(x, y, z, c='k', marker='o', s=2, label='Franke function')
 # ax.scatter(xx_train, yy_train, z_fit_OLS[:, :mesh_len_train], c='r', marker='o', s=2, label='OLS fit')
 # ax.scatter(xx_test, yy_test, z_pred_OLS[:, :mesh_len_test], c='g', marker='o', s=2, label='OLS prediction')
-# surf_train = ax.plot_surface(xx_train, yy_train, z_fit_OLS[:, :mesh_len_train], cmap=cm.coolwarm,
-#                        linewidth=0, antialiased=False, label='OLS fit', alpha=0.5)
-surf_test = ax.plot_surface(xx_test, yy_test, z_pred_OLS[:, :mesh_len_test], cmap=cm.plasma,
-					   linewidth=0, antialiased=False, label='OLS prediction', alpha=0.5)
+surf_train = ax.plot_surface(xx_train, yy_train, z_fit_OLS[:, :mesh_len_train], cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False, label='OLS fit', alpha=0.5)
+# surf_test = ax.plot_surface(xx_test, yy_test, z_pred_OLS[:, :mesh_len_test], cmap=cm.plasma,
+# 					   linewidth=0, antialiased=False, label='OLS prediction', alpha=0.5)
 
 # Customize the z axis.
 ax.set_zlim(-0.10, 1.40)
@@ -99,8 +100,8 @@ ax.zaxis.set_major_locator(LinearLocator(10))
 ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
 # Add a color bar which maps values to colors.
-# fig.colorbar(surf_train, shrink=0.5, aspect=5)
-fig.colorbar(surf_test, shrink=0.5, aspect=5)
+fig.colorbar(surf_train, shrink=0.5, aspect=5)
+# fig.colorbar(surf_test, shrink=0.5, aspect=5)
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
