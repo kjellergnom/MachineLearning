@@ -21,10 +21,10 @@ def least_squares_method(X, y):
 def get_bias(x, y):
     return (x - np.mean(y))**2
 
-np.random.seed(2018)
+np.random.seed()
 n = 100
 max_deg = 15
-n_bootstraps = 100
+n_bootstraps = 150
 
 x = np.linspace(-3, 3, n).reshape(-1, 1)
 y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2) + np.random.normal(0, 0.1, x.shape)
@@ -55,15 +55,15 @@ for deg in poly_degs:
     print(f'Error = Bias^2 + Var: {mse_list[deg]} = {bias_list[deg]} + {var_list[deg]}')
 
 
-# Plot main plot
-# fig, ax = plt.subplots()
-# ax.scatter(x, y, label='Data', color='r', marker='x')
-# # ax.scatter(X_train_scaled[:, 1], y_train_scaled, label='Train data', color='g', marker='o')
-# ax.plot(X_test_plot, y_pred_plot+y_intercept, 'b--', label='Prediction')
-# ax.set_xlabel(r'$x$')
-# ax.set_ylabel(r'$y$')
-# ax.legend(loc='best')
-# plt.show()
+    # Plot main plot
+    # fig, ax = plt.subplots()
+    # ax.scatter(x, y, label='Data', color='r', marker='x')
+    # ax.scatter(x_test, np.mean(y_pred, axis=1, keepdims=True), c='b', label='Prediction')
+    # ax.set_xlabel(r'$x$')
+    # ax.set_ylabel(r'$y$')
+    # ax.set_title(f'Polynomial degree: {deg}')
+    # ax.legend(loc='best')
+    # plt.show()
 
 # Plot metrics
 fig, ax = plt.subplots()
@@ -73,3 +73,12 @@ ax.plot(poly_degs, bias_list, label=r'Bias$^2$')
 ax.set_xlabel(r'Polynomial deg')
 plt.legend(loc='best')
 plt.show()
+
+#### Discussion ####
+# With too few data points the model will not be able to sufficiently fit the data at the ends.
+# This leads to extreme prediciton values at the ends. Using 100 data points or more seems to eliminate this problem.
+# As expected, the bias starts out large with a very low variance for the first polynomial degrees. 
+# The model seems to fit the data the best at around polynomial degree 8-10. 
+# Increasing the number of bootstraps seem to make the variance and bias (and consequently the MSE) more stable.
+# At 100 bootstraps, the bias-variance tradeoff is very clear. However, a weird spike in the variance appears
+# often at a polynomial degree of 12 and 14. 
