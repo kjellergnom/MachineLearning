@@ -22,9 +22,9 @@ def get_bias(x, y):
     return (x - np.mean(y))**2
 
 np.random.seed()
-n = 100
+n = 200
 max_deg = 15
-n_bootstraps = 150
+n_bootstraps = 100
 
 x = np.linspace(-3, 3, n).reshape(-1, 1)
 y = np.exp(-x**2) + 1.5 * np.exp(-(x-2)**2) + np.random.normal(0, 0.1, x.shape)
@@ -42,6 +42,7 @@ for deg in poly_degs:
         x_, y_ = resample(x_train, y_train)
         y_pred[:, i] = model.fit(x_, y_).predict(x_test).ravel()
     
+    print(y_pred.shape, y_test.shape)
     MSE = np.mean(np.mean((y_test - y_pred)**2, axis=1, keepdims=True))
     bias = np.mean((y_test - np.mean(y_pred, axis=1, keepdims=True))**2)
     var = np.mean(np.var(y_pred, axis=1, keepdims=True))
