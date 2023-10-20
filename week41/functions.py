@@ -34,10 +34,16 @@ def generate_2D_design_matrix(x, y, poly_deg, intercept=True):
 
     return X
 
-def get_beta_OLS(X, y):
+def Cost_OLS(X, y, beta):
+    return np.mean((y - X @ beta)**2)
+
+def beta_OLS(X, y):
     return np.linalg.pinv(X.T @ X) @ X.T @ y
 
-def get_beta_Ridge(X, y, lmbda):
+def Cost_Ridge(X, y, beta, lmbda):
+    return np.mean((y - X @ beta)**2) + lmbda * np.linalg.norm(beta)**2
+
+def beta_Ridge(X, y, lmbda):
     return np.linalg.pinv(X.T @ X + lmbda * np.eye(X.shape[1])) @ X.T @ y
 
 def FrankeFunction(x, y):    
@@ -47,7 +53,7 @@ def FrankeFunction(x, y):
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def GradientDescent(X, y, n_iter = 1000, lmbda = 1e-2, tol = 1e-8, method = 'OLS', momentum = False):
+def GradientDescent(X, y, n_iter = 1000, lmbda = 1e-2, tol = 1e-8, method = 'OLS', use_momentum = False, momentum = 0.3, step_size = 0.1):
     n = len(y)
     match method:
         case 'OLS':
@@ -59,7 +65,7 @@ def GradientDescent(X, y, n_iter = 1000, lmbda = 1e-2, tol = 1e-8, method = 'OLS
     beta = np.random.randn(X.shape[1], 1)
     eta = 1/eigenvalues.max()
 
-    match momentum:
+    match use_momentum:
         case False:
             for iter in range(n_iter):
                 beta_old = beta
@@ -77,14 +83,13 @@ def GradientDescent(X, y, n_iter = 1000, lmbda = 1e-2, tol = 1e-8, method = 'OLS
         case True:
             change = 0
             for iter in range(n_iter):
-                
                 match method:   
                     case 'OLS':
                         gradient = (2/n) * X.T @ (X @ beta - y)
                     case 'Ridge':
                         gradient = (2/n) * X.T @ (X @ beta - y) + 2 * lmbda * beta
                 
-                new_change = eta * gradient + momentum * change
+                new_change = step_size * gradient + momentum * change
                 beta -= new_change
 
                 change = new_change
@@ -94,5 +99,5 @@ def GradientDescent(X, y, n_iter = 1000, lmbda = 1e-2, tol = 1e-8, method = 'OLS
 
     return beta
     
-def StochasticGradientDescent():
-    pass
+def StochasticGradientDescent(n, M, n_epochs = 10):
+    m = int(n/M)

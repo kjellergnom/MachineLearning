@@ -17,7 +17,7 @@ def FrankeFunction(x,y):
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def create_X(x, y, n):
+def create_X(x, y, n: int):
 	if len(x.shape) > 1:
 		x = np.ravel(x)
 		y = np.ravel(y)
@@ -27,9 +27,6 @@ def create_X(x, y, n):
 	for i in range(1,n+1):
 		q = int((i)*(i+1)/2)
 		for k in range(i+1):
-			print(f'q+k = {q+k}')
-			print(f'i-k = {i-k}')
-			print(f'k = {k}')
 			X[:,q+k] = (x**(i-k))*(y**k)
 	return X
 
@@ -43,19 +40,21 @@ def beta_Ridge(X, y, lmbda):
 
 # Make data.
 np.random.seed()
-n = 70
-order = 5
+n = 50
+order = np.arange(1, 6)
+deg = 4
 test_size = 0.2
 x = np.sort(np.random.uniform(0, 1, n))
 y = np.sort(np.random.uniform(0, 1, n))
-X = create_X(x, y, order)
 noise = np.random.normal(0, 0.05, (n,n))
 x, y = np.meshgrid(x,y)
 z = FrankeFunction(x, y) + noise
+X = create_X(x, y, deg)
 
+# MSE_train_arr = np.zeros(len(order))
+# MSE_test_arr = np.zeros(len(order))
 # Split data into training and test data
-X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=test_size, shuffle=False)
-
+X_train, X_test, z_train, z_test = train_test_split(X, z.ravel(), test_size=test_size)
 # Scale data using sklearn
 scaler = StandardScaler()
 scaler.fit(X_train)
@@ -63,24 +62,36 @@ X_train_scaled = scaler.transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Estimate and evaluate model
-model = make_pipeline(PolynomialFeatures(order), LinearRegression())
+model = make_pipeline(PolynomialFeatures(deg), LinearRegression())
 model.fit(X_train_scaled, z_train)
 z_fit_OLS = model.predict(X_train_scaled)
 z_pred_OLS = model.predict(X_test_scaled)
-z_fit_OLS = X_train_scaled @ beta_OLS(X_train_scaled, z_train)
-z_pred_OLS = X_test_scaled @ beta_OLS(X_test_scaled, z_test)
-print(z_fit_OLS)
-print(z_pred_OLS)
-mse_OLS = mean_squared_error(z_test, z_pred_OLS)
+# z_fit_OLS = X_train_scaled @ beta_OLS(X_train_scaled, z_train)
+# z_pred_OLS = X_test_scaled @ beta_OLS(X_test_scaled, z_test)
+mse_OLS_train = mean_squared_error(z_train, z_fit_OLS)
+mse_OLS_test = mean_squared_error(z_test, z_pred_OLS)
+# MSE_train_arr[deg-1] = mse_OLS_train
+# MSE_test_arr[deg-1] = mse_OLS_test
 r2_OLS = r2_score(z_test, z_pred_OLS)
-print(f'Test MSE OLS = {mse_OLS:.4f}')
+print(f'Test MSE OLS = {mse_OLS_test:.4f}')
 print(f'Test R2 OLS = {r2_OLS:.4f}')
 
 # Create train and test surfaces
-mesh_len_train = np.shape(X_train_scaled)[0]
-mesh_len_test = np.shape(X_test_scaled)[0]
-xx_train, yy_train = np.meshgrid(np.linspace(0, 1, mesh_len_train), np.linspace(0, 1, mesh_len_train))
-xx_test, yy_test = np.meshgrid(np.linspace(0, 1, mesh_len_test), np.linspace(0, 1, mesh_len_test))
+x = X_test_scaled[:, 1]
+y = X_test_scaled[:, 2]
+x_mesh = np.linspace(x.min(), x.max(), 20)
+y_mesh = np.linspace(y.min(), y.max(), 20)
+x_mesh, y_mesh = np.meshgrid(x_mesh, y_mesh)
+zz_test = np.zeros_like(x_mesh)
+xy_mesh = np.vstack((x_mesh.ravel(), y_mesh.ravel())).T
+zz_test.ravel()[:] = model.predict(xy_mesh)
+# plt.plot(order, MSE_train_arr, 'b', label='Train')
+# plt.plot(order, MSE_test_arr, 'r', label='Test')
+# plt.title('MSE for OLS')
+# plt.xlabel('Polynomial order')
+# plt.ylabel('MSE')
+# plt.legend(loc='best')
+# plt.show()
 
 # Plot the surface.
 fig = plt.figure()
@@ -90,7 +101,7 @@ ax.scatter(x, y, z, c='k', marker='o', s=2, label='Franke function')
 # ax.scatter(xx_test, yy_test, z_pred_OLS[:, :mesh_len_test], c='g', marker='o', s=2, label='OLS prediction')
 # surf_train = ax.plot_surface(xx_train, yy_train, z_fit_OLS[:, :mesh_len_train], cmap=cm.coolwarm,
 #                        linewidth=0, antialiased=False, label='OLS fit', alpha=0.5)
-surf_test = ax.plot_surface(xx_test, yy_test, z_pred_OLS[:, :mesh_len_test], cmap=cm.plasma,
+surf_test = ax.plot_surface(xx_test, yy_test, zz_test, cmap=cm.plasma,
 					   linewidth=0, antialiased=False, label='OLS prediction', alpha=0.5)
 
 # Customize the z axis.
