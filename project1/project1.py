@@ -17,7 +17,7 @@ def FrankeFunction(x,y):
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def create_X(x, y, n: int):
+def create_X(x, y, n):
 	if len(x.shape) > 1:
 		x = np.ravel(x)
 		y = np.ravel(y)
@@ -51,8 +51,6 @@ x, y = np.meshgrid(x,y)
 z = FrankeFunction(x, y) + noise
 X = create_X(x, y, deg)
 
-# MSE_train_arr = np.zeros(len(order))
-# MSE_test_arr = np.zeros(len(order))
 # Split data into training and test data
 X_train, X_test, z_train, z_test = train_test_split(X, z.ravel(), test_size=test_size)
 # Scale data using sklearn
