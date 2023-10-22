@@ -34,17 +34,8 @@ def generate_2D_design_matrix(x, y, poly_deg, intercept=True):
 
     return X
 
-def Cost_OLS(X, y, beta):
-    return np.mean((y - X @ beta)**2)
-
-def beta_OLS(X, y):
-    return np.linalg.pinv(X.T @ X) @ X.T @ y
-
-def Cost_Ridge(X, y, beta, lmbda):
-    return np.mean((y - X @ beta)**2) + lmbda * np.linalg.norm(beta)**2
-
-def beta_Ridge(X, y, lmbda):
-    return np.linalg.pinv(X.T @ X + lmbda * np.eye(X.shape[1])) @ X.T @ y
+def cost_func(X, y, beta, lmbda = 0):
+    return np.mean((y - X @ beta)**2) + lmbda * np.linalg.norm(beta, ord=2)**2
 
 def FrankeFunction(x, y):    
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
@@ -53,51 +44,58 @@ def FrankeFunction(x, y):
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-def GradientDescent(X, y, n_iter = 1000, lmbda = 1e-2, tol = 1e-8, method = 'OLS', use_momentum = False, momentum = 0.3, step_size = 0.1):
+def learning_schedule_decay(t, t0, t1):
+    return t0/(t1 + t)
+
+def GradientDescent(X, y, n_iter = 1000, lmbda = 0, tol = 1e-8, momentum = 0, eta: float|None = None):
     n = len(y)
-    match method:
-        case 'OLS':
-            H = (2/n) * X.T @ X
-        case 'Ridge':
-            H = (2/n) * X.T @ X + 2 * lmbda * np.eye(X.shape[1])
+    H = (2/n) * X.T @ X + 2 * lmbda * np.eye(X.shape[1])
 
-    eigenvalues, _ = np.linalg.eig(H)
-    beta = np.random.randn(X.shape[1], 1)
-    eta = 1/eigenvalues.max()
+    if eta is None:
+        eigenvalues, _ = np.linalg.eig(H)
+        beta = np.random.randn(X.shape[1], 1)
+        eta = 1/eigenvalues.max()
 
-    match use_momentum:
-        case False:
-            for iter in range(n_iter):
-                beta_old = beta
-                match method:
-                    case 'OLS':
-                        gradient = (2/n) * X.T @ (X @ beta - y)
-                    case 'Ridge':
-                        gradient = (2/n) * X.T @ (X @ beta - y) + 2 * lmbda * beta
-                
-                beta = beta_old - eta * gradient
+    change = 0
+    for iter in range(n_iter):
+        gradient = (2/n) * X.T @ (X @ beta - y) + 2 * lmbda * beta
+        
+        new_change = eta * gradient + momentum * change
+        beta -= new_change
 
-                if np.linalg.norm(beta_old - beta) <= tol:  
-                    return beta
+        change = new_change
 
-        case True:
-            change = 0
-            for iter in range(n_iter):
-                match method:   
-                    case 'OLS':
-                        gradient = (2/n) * X.T @ (X @ beta - y)
-                    case 'Ridge':
-                        gradient = (2/n) * X.T @ (X @ beta - y) + 2 * lmbda * beta
-                
-                new_change = step_size * gradient + momentum * change
-                beta -= new_change
-
-                change = new_change
-
-                if np.linalg.norm((beta + change) - beta) <= tol:  
-                    return beta
+        if np.linalg.norm((beta + change) - beta) <= tol:  
+            return beta
 
     return beta
+
+def StochasticGradientDescent(X, y, M, n_epochs = 10, lmbda = 0, tol = 1e-8, time_decay: tuple = (None, None), momentum = 0):
+    n = len(y)
+    B = int(n/M)    # mini-batches
+    t0, t1 = time_decay
+
+    H = (2/n) * X.T @ X + 2 * lmbda * np.eye(X.shape[1])
+
+    eigenvalues, _ = np.linalg.eig(H)
+    theta = np.random.randn(X.shape[1], 1)
+    eta = 1/eigenvalues.max()
     
-def StochasticGradientDescent(n, M, n_epochs = 10):
-    m = int(n/M)
+    for epoch in range(n_epochs):
+        change = 0
+        for i in range(B):
+            k = M*np.random.randint(B)    #k'th mini-batch
+            X_k = X[k:k+M]
+            y_k = y[k:k+M]
+            gradient = (2/M) * X_k.T @ (X_k @ theta - y_k) + 2 * lmbda * theta
+            t = epoch * B + i
+            if t0 is not None and t1 is not None:
+                eta = learning_schedule_decay(t, t0, t1)
+            new_change = eta * gradient + momentum * change
+            theta -= new_change
+            change = new_change
+
+        if np.linalg.norm((theta + change) - theta) <= tol:  
+            return theta
+
+    return theta
